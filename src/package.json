@@ -1,0 +1,22 @@
+{
+  "name": "aws-lambda-extension",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "prepare:extension": "tsc && rm -rf $BUILD_PATH && node esbuild.config.js && cp -r extensions $BUILD_PATH/extensions",
+    "build:extension": "cross-env BUILD_PATH=./build EXTENSION_NAME=kinesis-telemetry-extension npm run prepare:extension"
+  },
+  "dependencies": {
+    "@aws-sdk/client-kinesis": "^3.462.0",
+    "https": "^1.0.0",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "cross-env": "^7.0.3",
+    "dotenv-cli": "^7.3.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.3"
+  }
+}
