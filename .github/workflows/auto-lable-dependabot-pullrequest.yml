@@ -21,3 +21,10 @@ jobs:
         run: gh pr edit "$PR_URL" --add-label "production"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Add a label for all development dependencies
+        if: steps.metadata.outputs.dependency-type == 'direct:development'
+        run: gh pr edit "$PR_URL" --add-label "development"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
