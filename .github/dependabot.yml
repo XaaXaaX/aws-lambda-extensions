@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Weekly major/minor/patch version updates
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    ignore:
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-major" ]
+    groups:
+      prod-dependencies:
+        dependency-type: 'production'
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "main"
+    groups:
+      prod-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "major"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "major"
+    ignore:
+      - dependency-name: "*"
+        update-types: [ 
+          "version-update:semver-minor",
+          "version-update:semver-patch"
+        ]
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
