@@ -10,7 +10,7 @@
   "dependencies": {
     "@aws-sdk/client-kinesis": "^3.743.0",
     "https": "^1.0.0",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.17.17",
