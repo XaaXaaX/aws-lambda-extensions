@@ -1,0 +1,44 @@
+name: Dependabot Automated Pull Requests
+on: pull_request
+
+permissions:
+  pull-requests: write
+  contents: write
+  issues: write
+  repository-projects: write
+
+env:
+  DEPS_SCOPE: 'production'
+  MAJOR_UPDATE: 'false'
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Define Dependencies scope
+        run: |
+          echo "DEPS_SCOPE=${{ steps.metadata.outputs.dependency-type == 'direct:development' && 'development' || 'production' }}" >> $GITHUB_ENV
+          echo "MAJOR_UPDATE=${{ steps.metadata.outputs.update-type == 'version-update:semver-major' && 'true' || 'false' }}" >> $GITHUB_ENV
+      - name: Add a label for all ${{ env.DEPS_SCOPE }} dependencies
+        continue-on-error: true
+        run: gh pr edit "$PR_URL" --add-label ${{ env.DEPS_SCOPE }}
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Approve a PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Enable auto-merge for Dependabot PRs
+        if: ${{ env.MAJOR_UPDATE != 'true' }}
+        run: gh pr merge --auto --rebase --delete-branch "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

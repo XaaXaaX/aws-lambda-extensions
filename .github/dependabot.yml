@@ -2,7 +2,7 @@ version: 2
 updates:
   # Weekly major/minor/patch version updates
   - package-ecosystem: 'npm'
-    directory: '/'
+    directories: [ '/src/', '/cdk/' ]
     schedule:
       interval: 'weekly'
     ignore:
@@ -24,7 +24,7 @@ updates:
       include: "scope"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directories: [ '/src/', '/cdk/' ]
     target-branch: "main"
     groups:
       prod-dependencies:
