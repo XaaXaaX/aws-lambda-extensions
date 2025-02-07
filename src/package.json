@@ -8,7 +8,7 @@
     "build:extension": "cross-env BUILD_PATH=./build EXTENSION_NAME=kinesis-telemetry-extension npm run prepare:extension"
   },
   "dependencies": {
-    "@aws-sdk/client-kinesis": "^3.462.0",
+    "@aws-sdk/client-kinesis": "^3.743.0",
     "https": "^1.0.0",
     "node-fetch": "^2.6.7"
   },
