@@ -10,7 +10,8 @@
   "dependencies": {
     "@aws-sdk/client-kinesis": "^3.782.0",
     "https": "^1.0.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "undici": "^6.21.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
