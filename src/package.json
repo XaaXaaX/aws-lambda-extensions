@@ -14,10 +14,10 @@
     "undici": "^6.21.2"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.2",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^8.0.0",
-    "esbuild": "^0.25.2",
+    "esbuild": "^0.25.3",
     "typescript": "^5.8.3"
   }
 }
