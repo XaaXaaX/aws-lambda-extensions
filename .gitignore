@@ -1,8 +1,27 @@
+# git related
+.git
+
+# Dev and CI 
+.vs
+.DS_Store
+.scannerwork
+.nx
+
 node_modules
-.aws-sam
+cdk.out
+
+# Testing
+coverage
+reports
+
+# Build
+dist
+build
+
+
+.DS_Store
+
+node_modules
 out
-samconfig.toml
 build
 dist
-.tmp
-.DS_Store

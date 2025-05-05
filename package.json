@@ -1,0 +1,31 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xaaxaax/aws-lambda-extensions.git"
+  },
+  "scripts": {
+    "nx": "nx",
+    "clean:all": "nx run-many --target=prebuild --output-style static --skip-nx-cache",
+    "build:all": "nx run-many --target=build --output-style static --skip-nx-cache",
+    "app:dev:all": "nx run-many --target=app:dev --output-style static --skip-nx-cache --require-approval never"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "aws-cdk": "^2.1010.0",
+    "aws-cdk-lib": "^2.190.0",
+    "constructs": "^10.4.2",
+    "esbuild": "^0.25.2",
+    "nx": "^20.8.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.21"
+  }
+}

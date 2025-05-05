@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/extension.ts",
+  "app": "npx ts-node --prefer-ts-exts cdk/bin/extension.ts",
   "watch": {
     "include": [
       "**"
@@ -11,7 +11,6 @@
       "**/*.js",
       "tsconfig.json",
       "package*.json",
-      "yarn.lock",
       "node_modules",
       "test"
     ]

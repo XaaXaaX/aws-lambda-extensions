@@ -1,3 +1,4 @@
+import { build } from "esbuild";
 const basePath = process.env.EXTENSION_NAME;
 const bundledPath = "./build";
 
@@ -5,7 +6,7 @@ const AllEntries = [];
 AllEntries.push(`${basePath}/index.ts`);
 
 
-require('esbuild').build({
+build({
     entryPoints: AllEntries,
     entryNames: `[dir]/[name]`,
     outbase:'.',

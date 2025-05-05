@@ -1,0 +1,13 @@
+# Ignore dev related files
+*.md
+jest.config.js
+tsconfig.json
+
+# Ignore dev related files
+test
+
+# ignore the .ts files
+*.ts
+
+# include the .d.ts files
+!*.d.ts

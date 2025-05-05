@@ -1,0 +1,23 @@
+{
+  "name": "aws-lambda-extension",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "//Clean": "Clean Up",
+    "prebuild": "rm -rf dist build bin cdk.out",
+    "//Build": "Build",
+    "build": "pnpm run build:tsc && pnpm run build:esbuild && pnpm run build:asset",
+    "build:tsc": "tsc --noemit",
+    "build:esbuild": "node esbuild.config.js",
+    "build:asset": "cp -r extensions $BUILD_PATH/extensions",
+    "//Deploy Extension": "Deploy",
+    "extension": "cdk --app 'tsx ./cdk/bin/extension.ts'",
+    "app:dev": "pnpm run extension -c env=dev"
+  },
+  "dependencies": {
+    "@aws-sdk/client-kinesis": "^3.787.0",
+    "@smithy/node-http-handler": "^4.0.4",
+    "undici": "^7.8.0"
+  }
+}

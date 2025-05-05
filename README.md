@@ -31,7 +31,3 @@ If Extension needs specific permissions, attaching the policy to function role  
 To use the extensions effectively, you must provide the extensions arn to lambda , and attach the provided managedpolicy as iam managedpolicy to lambda function.
 
 Any extension must provide the Extension Arn and the ManagedPolicy Name and Arn using parameter store.
-
-## Consult the following extensions dedicated usage documentation
-
-- [Kinesis Telemetry extension](./docs/kinesis-telemetry-extension.md)

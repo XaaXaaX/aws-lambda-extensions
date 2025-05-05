@@ -3,10 +3,11 @@ import { Effect, ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Stream } from 'aws-cdk-lib/aws-kinesis';
 import { Architecture, Code, LayerVersion, LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Function } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-import path = require('path');
+import { resolve } from 'path';
 
 export interface TelemetryApiExtensionStackProps extends StackProps {
   extensionName: string,
@@ -19,18 +20,21 @@ export class TelemetryApiKinesisExtensionStack extends Stack {
   constructor(scope: Construct, id: string, props: TelemetryApiExtensionStackProps) {
     super(scope, id, props);
 
-    const kinesis = new Stream(this, 'TelemetryStream', { streamName: props.streamName });
+    const kinesis = new Stream(this, 'TelemetryStream', { 
+      streamName: props.streamName,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
     
     const extension = new LayerVersion(this, 'kinesis-telemetry-api-extension', {
       layerVersionName: `${props?.extensionName}`,
-      code: Code.fromAsset(path.resolve(`../src/build`)),
+      code: Code.fromAsset(resolve(process.cwd(), `build`)),
       compatibleArchitectures: [
         Architecture.X86_64,
         Architecture.ARM_64
       ],
       compatibleRuntimes: [
-        Runtime.NODEJS_18_X,
         Runtime.NODEJS_20_X,
+        Runtime.NODEJS_22_X,
       ],
       description: props?.extensionName
     });
@@ -38,7 +42,7 @@ export class TelemetryApiKinesisExtensionStack extends Stack {
     const functionName = `${this.stackName}-temp-nodejs20-function`;
     new Function(this, 'LambdaFunction', {
       functionName,
-      runtime: Runtime.NODEJS_20_X,
+      runtime: Runtime.NODEJS_22_X,
       handler: 'index.handler',
       loggingFormat: LoggingFormat.JSON,
       code: Code.fromInline("module.exports.handler = async(event = {}) => { console.log('event :', event); }"),
