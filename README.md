@@ -2,6 +2,17 @@
 
 The project is for the purpose of centralizing the Lambda Extensions for different needs.
 
+## Architecture Documentation
+
+For detailed architecture information, including:
+- Functionality summary
+- Process sequence diagrams
+- Infrastructure diagrams
+- Dependency tables
+- WAR (Warnings, Assumptions, Risks) summary
+
+Please refer to the [Architecture Documentation](./ARCHITECTURE.md).
+
 ## Why Extensions ( External )
 
 The Extensions have a lifecycle when using with lambda functions.

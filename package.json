@@ -10,17 +10,21 @@
     "nx": "nx",
     "clean:all": "nx run-many --target=prebuild --output-style static --skip-nx-cache",
     "build:all": "nx run-many --target=build --output-style static --skip-nx-cache",
-    "app:dev:all": "nx run-many --target=app:dev --output-style static --skip-nx-cache --require-approval never"
+    "app:dev:all": "nx run-many --target=app:dev --output-style static --skip-nx-cache --require-approval never",
+    "test": "jest",
+    "test:docs": "jest tests/architecture-docs.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^22.14.1",
     "aws-cdk": "^2.1010.0",
     "aws-cdk-lib": "^2.190.0",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.2",
+    "jest": "^29.7.0",
     "nx": "^20.8.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
