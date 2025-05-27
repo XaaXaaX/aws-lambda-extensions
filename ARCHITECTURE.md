@@ -1,123 +1,128 @@
-# Lambda Extensions Architecture Documentation
+# Lambda Extensions Architecture
 
 ## Functionality Summary
 
-The Lambda Extensions project provides a centralized repository for various AWS Lambda Extensions that serve different needs. Currently, it includes a Kinesis Telemetry Extension that captures telemetry data from Lambda functions and forwards it to Amazon Kinesis Data Streams.
+The Lambda Extensions project provides a centralized repository for AWS Lambda Extensions that address various operational needs. The primary extension currently implemented is the Kinesis Telemetry Extension, which captures telemetry data from Lambda functions and forwards it to Amazon Kinesis Data Streams for real-time processing and analysis.
 
-### Kinesis Telemetry Extension
-
-The Kinesis Telemetry Extension is designed to:
-
-1. Register as an external extension with the Lambda Extensions API
-2. Subscribe to the Lambda Telemetry API to receive telemetry events
-3. Buffer telemetry events in memory
-4. Dispatch collected telemetry data to a Kinesis Data Stream
-5. Handle the complete Lambda extension lifecycle (init, invoke, shutdown)
-
-This extension runs in a separate process from the Lambda function and can continue processing telemetry data even after the function execution has completed. It shares the same security boundaries, memory, and resources with the Lambda function.
+The Kinesis Telemetry Extension:
+- Registers with the Lambda Extensions API to participate in the Lambda lifecycle
+- Subscribes to the Lambda Telemetry API to receive function telemetry data
+- Buffers telemetry events and dispatches them to a Kinesis stream
+- Ensures all telemetry data is sent even during function shutdown
+- Provides necessary IAM permissions through managed policies
 
 ## Process Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Lambda as Lambda Function
-    participant Extension as Kinesis Telemetry Extension
-    participant ExtAPI as Lambda Extensions API
-    participant TelAPI as Lambda Telemetry API
-    participant Kinesis as Amazon Kinesis
-
-    Note over Extension: Extension starts
-    Extension->>ExtAPI: Register extension
-    ExtAPI-->>Extension: Return extension ID
-    Extension->>Extension: Start telemetry listener
-    Extension->>TelAPI: Subscribe to telemetry events
-    TelAPI-->>Extension: Subscription confirmation
+    participant Lambda
+    participant Extension
+    participant TelemetryAPI
+    participant KinesisStream
     
-    loop Extension Lifecycle
-        Extension->>ExtAPI: Get next event
-        alt Invoke Event
-            ExtAPI-->>Extension: INVOKE event
-            Lambda->>TelAPI: Generate telemetry
-            TelAPI->>Extension: Forward telemetry
-            Extension->>Extension: Buffer telemetry
-            Extension->>Kinesis: Dispatch telemetry data
-        else Shutdown Event
-            ExtAPI-->>Extension: SHUTDOWN event
-            Extension->>Extension: Wait for remaining telemetry
-            Extension->>Kinesis: Dispatch remaining telemetry
-            Extension->>Extension: Exit process
-        end
+    Extension->>Lambda: Register Extension
+    Lambda-->>Extension: Extension ID
+    Extension->>TelemetryAPI: Subscribe to telemetry events
+    TelemetryAPI-->>Extension: Subscription confirmation
+    
+    loop Lambda Lifecycle
+        Lambda->>Extension: INVOKE event
+        TelemetryAPI->>Extension: Telemetry data
+        Extension->>Extension: Buffer telemetry data
+        Extension->>KinesisStream: Dispatch buffered data
+        Extension-->>Lambda: Processing complete
     end
+    
+    Lambda->>Extension: SHUTDOWN event
+    TelemetryAPI->>Extension: Final telemetry data
+    Extension->>KinesisStream: Dispatch remaining data
+    Extension-->>Lambda: Shutdown complete
 ```
 
 ## Infrastructure Diagram
 
 ```mermaid
-graph TD
-    subgraph "AWS Lambda"
-        LF[Lambda Function]
-        subgraph "Lambda Extensions"
-            KTE[Kinesis Telemetry Extension]
-        end
-        LF -- Generates --> Logs[Telemetry Data]
-        Logs -- Captured by --> KTE
-    end
-    
-    KTE -- Sends data to --> KDS[Kinesis Data Stream]
-    
-    subgraph "AWS CDK Deployment"
-        CDK[CDK Stack]
-        CDK -- Deploys --> KTE
-        CDK -- Creates --> KDS
-        CDK -- Creates --> MP[IAM Managed Policy]
-        CDK -- Stores --> SSM[SSM Parameters]
-    end
-    
-    SSM -- Stores --> ExtARN[Extension ARN]
-    SSM -- Stores --> PolicyARN[Policy ARN]
-    
-    MP -- Grants access to --> KDS
+---
+title: Lambda Extensions Infrastructure
+---
+%%{init: {"theme": "default", "architecture-diagram": {"wrapHeight": 30, "wrapWidth": 30}}}%%
+architecture-beta
+   component lambda {
+      style lambda fill:#FF9900,color:#000000
+      component runtime as "Lambda Runtime"
+      component extension as "Kinesis Telemetry Extension Layer"
+      component telemetry as "Lambda Telemetry API"
+      
+      runtime --> extension: "Lifecycle Events"
+      telemetry --> extension: "Telemetry Data"
+   }
+   
+   component kinesis as "Kinesis Data Stream" {
+      style kinesis fill:#2BBBAD,color:#000000
+   }
+   
+   component cloudwatch as "CloudWatch Logs" {
+      style cloudwatch fill:#6B3A94,color:#FFFFFF
+   }
+   
+   component iam as "IAM Managed Policy" {
+      style iam fill:#FF9900,color:#000000
+   }
+   
+   component ssm as "SSM Parameters" {
+      style ssm fill:#3B48CC,color:#FFFFFF
+   }
+   
+   component consumers as "Downstream Consumers" {
+      style consumers fill:#232F3E,color:#FFFFFF
+   }
+   
+   extension --> kinesis: "Telemetry Records"
+   extension --> cloudwatch: "Extension Logs"
+   iam --> extension: "Grants Permissions"
+   ssm --> iam: "Stores Extension ARN & Policy ARN"
+   kinesis --> consumers: "Processed by"
 ```
 
 ## Infrastructure Dependency Table
 
 ### Inter-stack Dependencies
 
-| Component | Type | Description | Dependencies |
-|-----------|------|-------------|--------------|
-| Kinesis Telemetry Extension | Lambda Layer | Extension that captures telemetry and sends to Kinesis | None |
-| Kinesis Data Stream | AWS Kinesis | Stream that receives telemetry data | None |
-| Extension IAM Managed Policy | IAM Policy | Grants permissions for the extension to write to Kinesis | Kinesis Data Stream |
-| Extension ARN Parameter | SSM Parameter | Stores the ARN of the extension layer | Kinesis Telemetry Extension |
-| Policy ARN Parameter | SSM Parameter | Stores the ARN of the managed policy | Extension IAM Managed Policy |
+| Component | Depends On | Purpose |
+|-----------|------------|---------|
+| Kinesis Telemetry Extension | Lambda Extensions API | Registers extension and receives lifecycle events |
+| Kinesis Telemetry Extension | Lambda Telemetry API | Subscribes to and receives telemetry data |
+| Kinesis Telemetry Extension | IAM Managed Policy | Provides necessary permissions to write to Kinesis |
+| Lambda Function | Kinesis Telemetry Extension Layer | Attaches the extension to the function |
+| Lambda Function | IAM Managed Policy | Grants the function permission to use the extension |
 
 ### External Dependencies
 
-| External Dependency | Type | Purpose |
-|--------------------|------|---------|
-| Lambda Extensions API | AWS Service API | Enables extension registration and lifecycle management |
-| Lambda Telemetry API | AWS Service API | Provides access to Lambda function telemetry data |
-| AWS Kinesis | AWS Service | Destination for telemetry data |
-| AWS IAM | AWS Service | Manages permissions for the extension |
-| AWS SSM Parameter Store | AWS Service | Stores extension ARN and policy ARN |
+| Component | External Dependency | Purpose |
+|-----------|---------------------|---------|
+| Kinesis Telemetry Extension | Kinesis Data Streams | Destination for telemetry data |
+| Kinesis Telemetry Extension | CloudWatch Logs | Logs extension operations and errors |
+| Kinesis Telemetry Extension | SSM Parameter Store | Stores extension ARN and policy ARN |
+| Deployment Pipeline | AWS CDK | Infrastructure as code deployment |
+| Deployment Pipeline | AWS CloudFormation | Underlying deployment mechanism |
 
-## WAR Summary (Warnings, Assumptions, Risks)
+## WAR Summary
 
 ### Warnings
-- The extension shares the same memory and resources with the Lambda function, which could impact function performance
-- Extension initialization must be successful before function initialization can start
-- Extension timeout is tied to the function timeout
+- Extension shares the same memory and resources with the Lambda function
+- Extension initialization must succeed before function initialization can start
+- Extension execution time counts toward the function's timeout
 - Failed Kinesis records are logged but not retried, which could lead to data loss
 
 ### Assumptions
-- Lambda functions using this extension will have JSON logging format enabled
-- The extension assumes a specific structure for telemetry data
-- The extension assumes it has sufficient permissions to write to Kinesis
-- The extension assumes the Kinesis stream exists and is properly configured
+- Lambda function uses a compatible runtime (Node.js 20.x or 22.x)
+- Lambda function has sufficient permissions to use the extension
+- Kinesis stream exists and is properly configured
+- Extension has network connectivity to AWS services
 
 ### Risks
-- High volume of telemetry data could exceed Kinesis throughput limits
-- Network issues could prevent telemetry data from reaching Kinesis
-- Extension errors could impact Lambda function execution
-- Memory constraints could limit the buffer size for telemetry data
-- Extension cold start adds latency to function initialization
+- Extension adds to the cold start time of Lambda functions
+- Extension increases the memory footprint of the Lambda function
+- High volume of telemetry data could impact function performance
+- Extension timeout configuration must be carefully managed to avoid data loss
+- Kinesis throttling could impact telemetry data delivery
