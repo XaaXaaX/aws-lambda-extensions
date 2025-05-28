@@ -55,8 +55,8 @@ architecture-beta
     service ssm(logos:aws-ssm)[SSM Parameter Store] in api
     service lambda(logos:aws-lambda)[Lambda Function] in api
 
-    lambda -- kinesis
-    lambda -- ssm
+    lambda: -- :kinesis
+    lambda: -- :ssm
 ```
 
 ## 🧱 Technologies
