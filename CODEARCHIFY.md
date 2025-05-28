@@ -50,15 +50,16 @@ The key architectural patterns used in this system are:
 
 ```mermaid
 architecture-beta
-    group api(Lambda)[Lambda Function]
+    group api(logos:aws-lambda)[API]
 
-    service disk1(Listener)[Telemetry Listener] in api
-    service server1(Dispatcher)[Telemetry Dispatcher] in api
-    service db(Kinesis)[Kinesis Stream] in api
+    service db(logos:aws-aurora)[Database] in api
+    service disk1(logos:aws-glacier)[Storage] in api
+    service disk2(logos:aws-s3)[Storage] in api
+    service server(logos:aws-ec2)[Server] in api
 
-    api:L -- R:disk1
-    disk1:T -- B:server1
-    server1:L -- R:db
+    db:L -- R:server
+    disk1:T -- B:server
+    disk2:T -- B:db
 ```
 
 ## 🧱 Technologies
